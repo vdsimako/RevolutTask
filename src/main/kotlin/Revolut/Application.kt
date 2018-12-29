@@ -38,6 +38,9 @@ class Application {
             path("/accountManagement") {
                 get(AccountController::getAllAccounts)
                 post(AccountController::createAccount)
+                path("/createTransfer") {
+                    post(AccountController::createTransfer)
+                }
             }
         }
     }
