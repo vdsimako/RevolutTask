@@ -1,30 +1,21 @@
 package Revolut
 
 import Revolut.controller.AccountController
-import Revolut.model.Account
+import Revolut.dblayer.DBLayer
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder.get
-import io.javalin.apibuilder.ApiBuilder.path
+import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.json.JavalinJackson
-import java.math.BigDecimal
 
 class Application {
-    private val javalin: Javalin = Javalin.create().apply {
+    val javalin: Javalin = Javalin.create().apply {
         contextPath("/revolut")
-        defaultContentType("application/json")
-//        enableCorsForAllOrigins() //for swagger definition
         port(8080)
-
-        routes {
-            path("/accountManagement"){
-                get(AccountController::getAllAccounts)
-            }
-        }
+        enableCaseSensitiveUrls()
     }
 
     val objectMapper: ObjectMapper = jacksonObjectMapper()
@@ -39,32 +30,20 @@ class Application {
     }
 
     fun start() {
-
-//        val api = OpenAPI()
-//            .info(
-//                Info()
-//                    .title("Test Title!")
-//                    .description("Description")
-//            )
-//            .addTagsItem(
-//                Tag()
-//                    .name("Name!")
-//                    .description("Description!")
-//            )
-
-        javalin.get("/greeting") { context -> context.result("Greetings!") }
-        javalin.get("/test") { context -> context.json(Account("1", BigDecimal.valueOf(10.0004))) }
-
         javalin.start()
+
+        DBLayer.createSchema()
+
+        javalin.routes {
+            path("/accountManagement") {
+                get(AccountController::getAllAccounts)
+                post(AccountController::createAccount)
+            }
+        }
     }
 }
 
 fun main(args: Array<String>) {
-//    val app = Application().javalin.start()
-
-//    app.get("/greeting") {context -> context.result("Greetings!") }
-//    app.get("/test") {context -> context.json(Account("1", BigDecimal.valueOf(10.0004))) }
-
     Application().start()
 }
 
