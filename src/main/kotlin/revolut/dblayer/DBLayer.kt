@@ -1,11 +1,12 @@
-package Revolut.dblayer
+package revolut.dblayer
 
-import Revolut.model.dto.Account
-import Revolut.model.dao.Accounts
-import Revolut.model.dto.TransferRequest
+import revolut.model.dto.Account
+import revolut.model.dao.Accounts
+import revolut.model.dto.TransferRequest
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
+import java.sql.Connection
 
 object DBLayer {
 
@@ -27,30 +28,6 @@ object DBLayer {
         }
 
         return accounts
-    }
-
-    fun createSchema() {
-        transaction {
-//            addLogger(StdOutSqlLogger)
-            SchemaUtils.create(Accounts)
-
-            Accounts.insert {
-                it[accountNumber] = "1"
-                it[amount] = BigDecimal.TEN
-            }
-
-            Accounts.insert {
-                it[accountNumber] = "2"
-                it[amount] = BigDecimal.TEN
-            }
-
-            Accounts.insert {
-                it[accountNumber] = "3"
-                it[amount] = BigDecimal.TEN
-            }
-
-            commit()
-        }
     }
 
     fun createAccount(account: Account): Account {
@@ -87,7 +64,7 @@ object DBLayer {
     fun getAccount(transferRequest: TransferRequest): Account? {
         var accountDto: Account? = null
 
-        transaction {
+        transaction(Connection.TRANSACTION_READ_COMMITTED, 2) {
             val account = Accounts.select { Accounts.accountNumber eq transferRequest.fromAccountNumber }.first()
 
             accountDto = Account(account[Accounts.accountNumber], account[Accounts.amount])

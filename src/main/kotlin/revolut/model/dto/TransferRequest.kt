@@ -1,4 +1,4 @@
-package Revolut.model.dto
+package revolut.model.dto
 
 import java.math.BigDecimal
 

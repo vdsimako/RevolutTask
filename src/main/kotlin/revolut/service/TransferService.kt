@@ -1,8 +1,8 @@
-package Revolut.service
+package revolut.service
 
-import Revolut.dblayer.DBLayer
-import Revolut.model.dto.TransferRequest
-import Revolut.model.dto.TransferResponse
+import revolut.dblayer.DBLayer
+import revolut.model.dto.TransferRequest
+import revolut.model.dto.TransferResponse
 
 object TransferService {
 

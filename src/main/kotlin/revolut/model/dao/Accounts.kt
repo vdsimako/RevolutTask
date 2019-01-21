@@ -1,4 +1,4 @@
-package Revolut.model.dao
+package revolut.model.dao
 
 import org.jetbrains.exposed.sql.Table
 
