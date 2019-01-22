@@ -1,14 +1,12 @@
 package revolut
 
-import io.javalin.Javalin
 import JavalinApp
-import com.beust.klaxon.Klaxon
+import io.javalin.Javalin
 import khttp.get
 import khttp.post
 import org.json.JSONObject
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import revolut.dblayer.DBLayer
 import revolut.model.dto.Account
 import revolut.model.dto.TransferResponse
 import java.math.BigDecimal
@@ -16,9 +14,10 @@ import java.math.BigDecimal
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ApplicationTest {
 
-    private val app: Javalin = JavalinApp(8080).init()
+    private val port = 8080
+    private val app: Javalin = JavalinApp(port).init()
 
-    private val URL = "http://localhost:8080"
+    private val URL = "http://localhost:" + port
     private val BASE_PATH = "/revolut"
     private val MANAGEMENT_PATH = "/accountManagement"
     private val TRANSFER_PATH = "/createTransfer"
@@ -41,10 +40,13 @@ class ApplicationTest {
     @DisplayName("Test check success transfer from one account to another")
     @Test
     fun testTransferComplete() {
-        var response = post(url = URL + BASE_PATH + MANAGEMENT_PATH + TRANSFER_PATH,
-            data =  JSONObject(testTransferRequest))
+        var response = post(
+            url = URL + BASE_PATH + MANAGEMENT_PATH + TRANSFER_PATH,
+            data = JSONObject(testTransferRequest)
+        )
 
-        val transferResponse = Klaxon().parse<TransferResponse>(response.jsonObject.toString())
+
+        val transferResponse = response.text.deserialize<TransferResponse>()
 
         assertEquals(POST_SUCCESS_CODE, response.statusCode)
 
@@ -56,21 +58,21 @@ class ApplicationTest {
         val accountList = parseAccountListFromJSONArray(response.jsonArray)
 
         assertEquals(Account(accountNumber = "1", amount = BigDecimal.valueOf(0.0)),
-            accountList.first { account -> account.accountNumber == "1"})
+            accountList.first { account -> account.accountNumber == "1" })
 
         assertEquals(Account(accountNumber = "2", amount = BigDecimal.valueOf(20.0)),
-            accountList.first{ account -> account.accountNumber == "2" })
+            accountList.first { account -> account.accountNumber == "2" })
 
     }
 
     @Test
     fun testTransferError() {
-        println("run another test")
+        var response = post(
+            url = URL + BASE_PATH + MANAGEMENT_PATH + TRANSFER_PATH,
+            data = JSONObject(testErrorTransferRequest)
+        )
 
-        var response = post(url = URL + BASE_PATH + MANAGEMENT_PATH + TRANSFER_PATH,
-            data = JSONObject(testErrorTransferRequest))
-
-        val transferResponse = Klaxon().parse<TransferResponse>(response.jsonObject.toString())
+        val transferResponse = response.text.deserialize<TransferResponse>()
 
         assertEquals(POST_SUCCESS_CODE, response.statusCode)
         assertEquals(TransferResponse(message = ERROR_MESSAGE), transferResponse)
@@ -80,9 +82,9 @@ class ApplicationTest {
         val accountList = parseAccountListFromJSONArray(response.jsonArray)
 
         assertEquals(Account(accountNumber = "1", amount = BigDecimal.valueOf(10.0)),
-            accountList.first { account -> account.accountNumber == "1"})
+            accountList.first { account -> account.accountNumber == "1" })
 
         assertEquals(Account(accountNumber = "2", amount = BigDecimal.valueOf(10.0)),
-            accountList.first{ account -> account.accountNumber == "2" })
+            accountList.first { account -> account.accountNumber == "2" })
     }
 }

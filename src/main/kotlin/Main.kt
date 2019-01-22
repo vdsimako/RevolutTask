@@ -1,10 +1,11 @@
 import io.javalin.Javalin
+import io.javalin.RequestLogger
 import io.javalin.apibuilder.ApiBuilder
 import revolut.controller.AccountController
 import revolut.dblayer.DBLayer
 
 fun main(args: Array<String>) {
-    JavalinApp(8000).init()
+    JavalinApp(8080).init()
 }
 
 
@@ -12,7 +13,7 @@ class JavalinApp(private val port: Int) {
     fun init(): Javalin {
         val javalinApp = Javalin.create().apply {
             contextPath("/revolut")
-            port(8080)
+            port(port)
             enableCaseSensitiveUrls()
         }.start()
 
@@ -26,7 +27,7 @@ class JavalinApp(private val port: Int) {
             }
         }
 
-//        DBLayer.createSchema()
+        DBLayer.createSchema()
 
         return javalinApp
     }

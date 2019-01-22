@@ -71,4 +71,10 @@ object DBLayer {
         }
         return accountDto
     }
+
+    fun createSchema() {
+        transaction {
+            SchemaUtils.createMissingTablesAndColumns(Accounts)
+        }
+    }
 }
