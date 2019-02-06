@@ -1,35 +1,33 @@
-import io.javalin.Javalin
-import io.javalin.RequestLogger
-import io.javalin.apibuilder.ApiBuilder
-import revolut.controller.AccountController
-import revolut.dblayer.DBLayer
+import com.fasterxml.jackson.databind.SerializationFeature
+import controller.transfer
+import dblayer.DatabaseFactory
+import io.ktor.application.Application
+import io.ktor.application.install
+import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.jackson.jackson
+import io.ktor.routing.Routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 
 fun main(args: Array<String>) {
-    JavalinApp(8080).init()
+    embeddedServer(Netty, 8080, watchPaths = listOf("MainKt"), module = Application::module).start()
 }
 
+fun Application.module() {
+    install(DefaultHeaders)
+    install(CallLogging)
 
-class JavalinApp(private val port: Int) {
-    fun init(): Javalin {
-        val javalinApp = Javalin.create().apply {
-            contextPath("/revolut")
-            port(port)
-            enableCaseSensitiveUrls()
-        }.start()
-
-        javalinApp.routes {
-            ApiBuilder.path("/accountManagement") {
-                ApiBuilder.get(AccountController::getAllAccounts)
-                ApiBuilder.post(AccountController::createAccount)
-                ApiBuilder.path("/createTransfer") {
-                    ApiBuilder.post(AccountController::createTransfer)
-                }
-            }
+    install(ContentNegotiation) {
+        jackson {
+            configure(SerializationFeature.INDENT_OUTPUT, true)
         }
-
-        DBLayer.createSchema()
-
-        return javalinApp
     }
 
+    DatabaseFactory.createSchema()
+
+    install(Routing) {
+        transfer()
+    }
 }

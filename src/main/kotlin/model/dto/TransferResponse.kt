@@ -1,3 +1,3 @@
-package revolut.model.dto
+package model.dto
 
 data class TransferResponse(val message:String)
